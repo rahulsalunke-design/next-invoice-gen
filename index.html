@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="invoice">
+
+    <!-- Invoice header -->
+    <header class="invoice-header">
+      <h1>Invoice</h1>
+      <div class="invoice-meta">
+        <p><span>Invoice No:</span> #0001</p>
+        <p><span>Date:</span> 24 Nov 2026</p>
+      </div>
+    </header>
+
+    <!-- Bill to block -->
+    <section class="bill-to">
+      <h2>Bill to</h2>
+      <p>Client Name</p>
+      <p>Client Address</p>
+      <p>client@email.com</p>
+    </section>
+
+    <!-- Items table (empty body for now) -->
+    <table class="items">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        <!-- Rows are added by script.js -->
+      </tbody>
+    </table>
+
+    <button type="button" id="add-item-btn" class="add-item-btn">Add item</button>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
