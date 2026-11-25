@@ -17,6 +17,7 @@ function addItemRow() {
     <td><input type="number" class="item-qty" value="1"></td>
     <td><input type="number" class="item-price" value="0"></td>
     <td class="item-total">0.00</td>
+    <td><button type="button" class="delete-btn" aria-label="Delete row">×</button></td>
   `;
 
   itemsBody.appendChild(row);
@@ -68,6 +69,23 @@ addItemBtn.addEventListener("click", addItemRow);
 
 // Typing in any row (works for new rows too) recalculates everything
 itemsBody.addEventListener("input", recalculateTotals);
+
+// Clicking a Delete button anywhere in the table body removes its row
+itemsBody.addEventListener("click", function (event) {
+  const deleteBtn = event.target.closest(".delete-btn");
+  if (!deleteBtn) {
+    return; // the click was not on a Delete button
+  }
+
+  deleteBtn.closest("tr").remove();
+
+  // Never leave the table empty: add a fresh row if the last one was deleted
+  if (itemsBody.children.length === 0) {
+    addItemRow();
+  }
+
+  recalculateTotals();
+});
 
 // Changing the discount or tax recalculates everything too
 discountInput.addEventListener("input", recalculateTotals);

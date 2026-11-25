@@ -97,6 +97,35 @@ body {
   text-align: right;
 }
 
+/* Narrow column for the Delete button */
+.items th:last-child,
+.items td:last-child {
+  width: 48px;
+  text-align: center;
+}
+
+/* Delete button: quiet by default, red on hover, clear focus outline */
+.delete-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.delete-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 /* Add item button */
 .add-item-btn {
   margin-top: 16px;
