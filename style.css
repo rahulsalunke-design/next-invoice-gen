@@ -112,3 +112,37 @@ body {
 .add-item-btn:hover {
   background: #1d4ed8;
 }
+
+/* Totals block */
+.totals {
+  width: 320px;
+  margin: 24px 0 0 auto;
+}
+
+.totals-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 100px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.totals-percent input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.totals-value {
+  text-align: right;
+}
+
+.grand-total {
+  font-weight: bold;
+  font-size: 18px;
+  border-bottom: none;
+}

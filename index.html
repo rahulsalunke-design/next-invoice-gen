@@ -44,6 +44,34 @@
 
     <button type="button" id="add-item-btn" class="add-item-btn">Add item</button>
 
+    <!-- Totals block -->
+    <section class="totals">
+      <div class="totals-row">
+        <span class="totals-label">Subtotal</span>
+        <span class="totals-percent"></span>
+        <span class="totals-value" id="subtotal">0.00</span>
+      </div>
+      <div class="totals-row">
+        <label class="totals-label" for="discount-percent">Discount %</label>
+        <span class="totals-percent">
+          <input type="number" id="discount-percent" value="0">
+        </span>
+        <span class="totals-value" id="discount-amount">0.00</span>
+      </div>
+      <div class="totals-row">
+        <label class="totals-label" for="tax-percent">Tax %</label>
+        <span class="totals-percent">
+          <input type="number" id="tax-percent" value="0">
+        </span>
+        <span class="totals-value" id="tax-amount">0.00</span>
+      </div>
+      <div class="totals-row grand-total">
+        <span class="totals-label">Grand Total</span>
+        <span class="totals-percent"></span>
+        <span class="totals-value" id="grand-total">0.00</span>
+      </div>
+    </section>
+
   </main>
 
   <script src="script.js"></script>

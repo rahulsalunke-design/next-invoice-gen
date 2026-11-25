@@ -1,6 +1,12 @@
-// Grab the two elements we need from the page
+// Grab the elements we need from the page
 const addItemBtn = document.getElementById("add-item-btn");
 const itemsBody = document.getElementById("items-body");
+const discountInput = document.getElementById("discount-percent");
+const taxInput = document.getElementById("tax-percent");
+const subtotalEl = document.getElementById("subtotal");
+const discountAmountEl = document.getElementById("discount-amount");
+const taxAmountEl = document.getElementById("tax-amount");
+const grandTotalEl = document.getElementById("grand-total");
 
 // Build a new empty row and add it to the table body
 function addItemRow() {
@@ -22,18 +28,47 @@ function toNumber(text) {
   return isNaN(number) ? 0 : number;
 }
 
-// Recalculate one row: Qty x Price, shown with 2 decimals
+// Recalculate one row: Qty x Price, shown with 2 decimals.
+// It also returns the total as a number so the subtotal can add it up.
 function updateRowTotal(row) {
   const qty = toNumber(row.querySelector(".item-qty").value);
   const price = toNumber(row.querySelector(".item-price").value);
-  row.querySelector(".item-total").textContent = (qty * price).toFixed(2);
+  const total = qty * price;
+  row.querySelector(".item-total").textContent = total.toFixed(2);
+  return total;
+}
+
+// The ONE function that recalculates everything on the invoice
+function recalculateTotals() {
+  // 1. Update every row and add up their totals
+  const rows = Array.from(itemsBody.querySelectorAll("tr"));
+  const subtotal = rows.reduce(function (sum, row) {
+    return sum + updateRowTotal(row);
+  }, 0);
+
+  // 2. Read the discount % and tax %
+  const discountPercent = toNumber(discountInput.value);
+  const taxPercent = toNumber(taxInput.value);
+
+  // 3. Do the math in the right order
+  const discountAmount = subtotal * discountPercent / 100;
+  const discounted = subtotal - discountAmount;
+  const taxAmount = discounted * taxPercent / 100;
+  const grandTotal = discounted + taxAmount;
+
+  // 4. Show everything with 2 decimals
+  subtotalEl.textContent = subtotal.toFixed(2);
+  discountAmountEl.textContent = discountAmount.toFixed(2);
+  taxAmountEl.textContent = taxAmount.toFixed(2);
+  grandTotalEl.textContent = grandTotal.toFixed(2);
 }
 
 // Run addItemRow every time the button is clicked
 addItemBtn.addEventListener("click", addItemRow);
 
-// Listen for typing anywhere inside the table body (works for new rows too)
-itemsBody.addEventListener("input", function (event) {
-  const row = event.target.closest("tr");
-  updateRowTotal(row);
-});
+// Typing in any row (works for new rows too) recalculates everything
+itemsBody.addEventListener("input", recalculateTotals);
+
+// Changing the discount or tax recalculates everything too
+discountInput.addEventListener("input", recalculateTotals);
+taxInput.addEventListener("input", recalculateTotals);
