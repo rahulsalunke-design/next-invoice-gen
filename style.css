@@ -86,8 +86,8 @@ body {
 }
 
 /* Right-align the number columns: Qty, Price, Total */
-.items th:nth-child(n + 2),
-.items td:nth-child(n + 2) {
+.items th:nth-child(n + 3),
+.items td:nth-child(n + 3) {
   text-align: right;
 }
 
@@ -102,6 +102,41 @@ body {
 
 .items input[type="number"] {
   text-align: right;
+}
+
+/* Drag handle column */
+.items th:first-child,
+.items td.move-cell {
+  width: 56px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.drag-handle {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #9ca3af;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -2px;
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-handle:hover {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* The row being dragged looks faded */
+.items tr.dragging {
+  opacity: 0.4;
+  background: #eff6ff;
 }
 
 /* Narrow column for the Delete button */

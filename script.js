@@ -22,6 +22,9 @@ function addItemRow(item) {
   const row = document.createElement("tr");
 
   row.innerHTML = `
+    <td class="move-cell">
+      <span class="drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</span>
+    </td>
     <td><input type="text" class="item-description" placeholder="Description"></td>
     <td><input type="number" class="item-qty" value="1"></td>
     <td><input type="number" class="item-price" value="0"></td>
@@ -180,6 +183,58 @@ clearBtn.addEventListener("click", function () {
 
 // Typing in any row (works for new rows too) recalculates everything
 itemsBody.addEventListener("input", recalculateTotals);
+
+// DRAG AND DROP: reorder rows by dragging the ⋮⋮ handle
+let draggedRow = null; // the row being dragged right now
+
+// Start: only the handle is draggable, so we know which row was grabbed
+itemsBody.addEventListener("dragstart", function (event) {
+  const handle = event.target.closest(".drag-handle");
+  if (!handle) {
+    return;
+  }
+  draggedRow = handle.closest("tr");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", ""); // Firefox needs some data to start a drag
+  event.dataTransfer.setDragImage(draggedRow, 20, 20); // drag the whole row, not just the handle
+  draggedRow.classList.add("dragging");
+});
+
+// Moving over other rows: put the dragged row above or below the row under the pointer
+itemsBody.addEventListener("dragover", function (event) {
+  if (!draggedRow) {
+    return;
+  }
+  event.preventDefault(); // this says "you may drop here"
+
+  const overRow = event.target.closest("tr");
+  if (!overRow || overRow === draggedRow) {
+    return;
+  }
+
+  const box = overRow.getBoundingClientRect();
+  const inTopHalf = event.clientY < box.top + box.height / 2;
+
+  if (inTopHalf) {
+    itemsBody.insertBefore(draggedRow, overRow);
+  } else {
+    itemsBody.insertBefore(draggedRow, overRow.nextElementSibling);
+  }
+});
+
+// Drop: the row is already in its new place, so just save
+itemsBody.addEventListener("drop", function (event) {
+  event.preventDefault();
+});
+
+// End (drop or cancel): clean up and save the new order
+itemsBody.addEventListener("dragend", function () {
+  if (draggedRow) {
+    draggedRow.classList.remove("dragging");
+    draggedRow = null;
+    saveInvoice();
+  }
+});
 
 // Clicking a Delete button anywhere in the table body removes its row
 itemsBody.addEventListener("click", function (event) {
