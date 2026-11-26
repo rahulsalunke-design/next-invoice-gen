@@ -22,15 +22,16 @@
     <!-- Bill to block -->
     <section class="bill-to">
       <h2>Bill to</h2>
-      <p>Client Name</p>
-      <p>Client Address</p>
-      <p>client@email.com</p>
+      <input type="text" id="client-name" placeholder="Client name">
+      <input type="text" id="client-address" placeholder="Client address">
+      <input type="email" id="client-email" placeholder="client@email.com">
     </section>
 
     <!-- Items table (empty body for now) -->
     <table class="items">
       <thead>
         <tr>
+          <th aria-label="Drag"></th>
           <th>Description</th>
           <th>Qty</th>
           <th>Price</th>
@@ -44,6 +45,7 @@
     </table>
 
     <button type="button" id="add-item-btn" class="add-item-btn">Add item</button>
+    <button type="button" id="clear-btn" class="clear-btn">Clear invoice</button>
 
     <!-- Totals block -->
     <section class="totals">

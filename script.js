@@ -8,17 +8,35 @@ const discountAmountEl = document.getElementById("discount-amount");
 const taxAmountEl = document.getElementById("tax-amount");
 const grandTotalEl = document.getElementById("grand-total");
 
-// Build a new empty row and add it to the table body
-function addItemRow() {
+const clearBtn = document.getElementById("clear-btn");
+const clientNameInput = document.getElementById("client-name");
+const clientAddressInput = document.getElementById("client-address");
+const clientEmailInput = document.getElementById("client-email");
+
+// The name under which the draft is stored in the browser
+const STORAGE_KEY = "invoice-draft";
+
+// Build a new row and add it to the table body.
+// With no argument it is an empty row. With saved data it is filled in.
+function addItemRow(item) {
   const row = document.createElement("tr");
 
   row.innerHTML = `
+    <td class="move-cell">
+      <span class="drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</span>
+    </td>
     <td><input type="text" class="item-description" placeholder="Description"></td>
     <td><input type="number" class="item-qty" value="1"></td>
     <td><input type="number" class="item-price" value="0"></td>
     <td class="item-total">0.00</td>
     <td><button type="button" class="delete-btn" aria-label="Delete row">×</button></td>
   `;
+
+  if (item) {
+    row.querySelector(".item-description").value = String(item.description ?? "");
+    row.querySelector(".item-qty").value = String(item.qty ?? "1");
+    row.querySelector(".item-price").value = String(item.price ?? "0");
+  }
 
   itemsBody.appendChild(row);
 }
@@ -64,11 +82,159 @@ function recalculateTotals() {
   grandTotalEl.textContent = grandTotal.toFixed(2);
 }
 
-// Run addItemRow every time the button is clicked
-addItemBtn.addEventListener("click", addItemRow);
+// FUNCTION 1: read the page into a plain JavaScript object
+function readInvoiceFromPage() {
+  const rows = Array.from(itemsBody.querySelectorAll("tr"));
+
+  return {
+    billTo: {
+      name: clientNameInput.value,
+      address: clientAddressInput.value,
+      email: clientEmailInput.value,
+    },
+    items: rows.map(function (row) {
+      return {
+        description: row.querySelector(".item-description").value,
+        qty: row.querySelector(".item-qty").value,
+        price: row.querySelector(".item-price").value,
+      };
+    }),
+    discountPercent: discountInput.value,
+    taxPercent: taxInput.value,
+  };
+}
+
+// FUNCTION 2: save that object in the browser as text
+function saveInvoice() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(readInvoiceFromPage()));
+  } catch (error) {
+    // Storage can be full or blocked. The invoice still works, it just won't be saved.
+  }
+}
+
+// Put the page back to the empty starting state: one empty row, blank fields
+function resetPage() {
+  itemsBody.innerHTML = "";
+  clientNameInput.value = "";
+  clientAddressInput.value = "";
+  clientEmailInput.value = "";
+  discountInput.value = "0";
+  taxInput.value = "0";
+  addItemRow();
+  recalculateTotals();
+}
+
+// FUNCTION 3: load the saved object and rebuild the page from it
+function loadInvoice() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === null) {
+      resetPage(); // first visit: nothing saved yet
+      return;
+    }
+
+    const data = JSON.parse(saved);
+
+    itemsBody.innerHTML = "";
+    clientNameInput.value = String(data.billTo.name ?? "");
+    clientAddressInput.value = String(data.billTo.address ?? "");
+    clientEmailInput.value = String(data.billTo.email ?? "");
+    discountInput.value = String(data.discountPercent ?? "0");
+    taxInput.value = String(data.taxPercent ?? "0");
+
+    data.items.forEach(function (item) {
+      addItemRow(item);
+    });
+
+    // Never leave the table empty
+    if (itemsBody.children.length === 0) {
+      addItemRow();
+    }
+
+    recalculateTotals();
+  } catch (error) {
+    // Saved data was broken or unreadable: start fresh instead of crashing
+    resetPage();
+  }
+}
+
+// Run addItemRow every time the button is clicked, then save
+addItemBtn.addEventListener("click", function () {
+  addItemRow();
+  saveInvoice();
+});
+
+// Typing in ANY field on the page saves the draft
+document.addEventListener("input", saveInvoice);
+
+// Clear invoice: ask first, then wipe the saved draft and reset the page
+clearBtn.addEventListener("click", function () {
+  if (!confirm("Clear the whole invoice? This cannot be undone.")) {
+    return;
+  }
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    // nothing to do if storage is unavailable
+  }
+  resetPage();
+});
 
 // Typing in any row (works for new rows too) recalculates everything
 itemsBody.addEventListener("input", recalculateTotals);
+
+// DRAG AND DROP: reorder rows by dragging the ⋮⋮ handle
+let draggedRow = null; // the row being dragged right now
+
+// Start: only the handle is draggable, so we know which row was grabbed
+itemsBody.addEventListener("dragstart", function (event) {
+  const handle = event.target.closest(".drag-handle");
+  if (!handle) {
+    return;
+  }
+  draggedRow = handle.closest("tr");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", ""); // Firefox needs some data to start a drag
+  event.dataTransfer.setDragImage(draggedRow, 20, 20); // drag the whole row, not just the handle
+  draggedRow.classList.add("dragging");
+});
+
+// Moving over other rows: put the dragged row above or below the row under the pointer
+itemsBody.addEventListener("dragover", function (event) {
+  if (!draggedRow) {
+    return;
+  }
+  event.preventDefault(); // this says "you may drop here"
+
+  const overRow = event.target.closest("tr");
+  if (!overRow || overRow === draggedRow) {
+    return;
+  }
+
+  const box = overRow.getBoundingClientRect();
+  const inTopHalf = event.clientY < box.top + box.height / 2;
+
+  if (inTopHalf) {
+    itemsBody.insertBefore(draggedRow, overRow);
+  } else {
+    itemsBody.insertBefore(draggedRow, overRow.nextElementSibling);
+  }
+});
+
+// Drop: the row is already in its new place, so just save
+itemsBody.addEventListener("drop", function (event) {
+  event.preventDefault();
+});
+
+// End (drop or cancel): clean up and save the new order
+itemsBody.addEventListener("dragend", function () {
+  if (draggedRow) {
+    draggedRow.classList.remove("dragging");
+    draggedRow = null;
+    saveInvoice();
+  }
+});
 
 // Clicking a Delete button anywhere in the table body removes its row
 itemsBody.addEventListener("click", function (event) {
@@ -85,8 +251,12 @@ itemsBody.addEventListener("click", function (event) {
   }
 
   recalculateTotals();
+  saveInvoice();
 });
 
 // Changing the discount or tax recalculates everything too
 discountInput.addEventListener("input", recalculateTotals);
 taxInput.addEventListener("input", recalculateTotals);
+
+// When the page opens, bring back the saved draft (or start empty)
+loadInvoice();
