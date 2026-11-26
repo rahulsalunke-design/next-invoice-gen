@@ -57,8 +57,15 @@ body {
   color: #6b7280;
 }
 
-.bill-to p {
-  margin: 2px 0;
+.bill-to input {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 4px 0;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
 /* Items table */
@@ -140,6 +147,24 @@ body {
 
 .add-item-btn:hover {
   background: #1d4ed8;
+}
+
+/* Clear invoice button: quiet outline, red on hover */
+.clear-btn {
+  margin: 16px 0 0 8px;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  color: #dc2626;
+  border-color: #dc2626;
+  background: #fee2e2;
 }
 
 /* Totals block */
