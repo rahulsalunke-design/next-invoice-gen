@@ -237,3 +237,100 @@ body {
   font-size: 18px;
   border-bottom: none;
 }
+
+/* Print button: same quiet outline style as Clear invoice */
+.print-btn {
+  margin: 16px 0 0 8px;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.print-btn:hover {
+  color: #2563eb;
+  border-color: #2563eb;
+  background: #dbeafe;
+}
+
+/* PRINT: only applies when printing or saving as PDF */
+@media print {
+  @page {
+    margin: 15mm;
+  }
+
+  body {
+    padding: 0;
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .invoice {
+    max-width: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Hide everything that is not part of the invoice itself */
+  .add-item-btn,
+  .clear-btn,
+  .print-btn,
+  .delete-btn,
+  .items th:first-child,
+  .items td.move-cell,
+  .items th:last-child,
+  .items td:last-child {
+    display: none;
+  }
+
+  /* Inputs read as plain text, not as a form */
+  input {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #000000;
+    font: inherit;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input::-webkit-inner-spin-button,
+  input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Empty fields should not print their grey hint text */
+  input::placeholder {
+    color: transparent;
+  }
+
+  .items th {
+    background: transparent;
+    border-bottom: 2px solid #000000;
+  }
+
+  .items th,
+  .items td {
+    padding: 8px 6px;
+  }
+
+  /* Never split one row across two pages */
+  .items tr {
+    break-inside: avoid;
+  }
+
+  /* Keep the totals with the last table row */
+  .items tbody tr:last-child {
+    break-after: avoid;
+  }
+
+  .totals {
+    break-inside: avoid;
+    break-before: avoid;
+  }
+}

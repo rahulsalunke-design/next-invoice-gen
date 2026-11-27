@@ -181,6 +181,11 @@ clearBtn.addEventListener("click", function () {
   resetPage();
 });
 
+// Print / Save as PDF: open the browser's print dialog
+document.getElementById("print-btn").addEventListener("click", function () {
+  window.print();
+});
+
 // Typing in any row (works for new rows too) recalculates everything
 itemsBody.addEventListener("input", recalculateTotals);
 
