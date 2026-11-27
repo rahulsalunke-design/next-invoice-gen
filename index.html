@@ -12,11 +12,30 @@
 
     <!-- Invoice header -->
     <header class="invoice-header">
-      <h1>Invoice</h1>
-      <div class="invoice-meta">
-        <p><span>Invoice No:</span> #0001</p>
-        <p><span>Date:</span> 24 Nov 2026</p>
+      <div class="header-left">
+        <h1>Invoice</h1>
+        <img id="logo-preview" class="logo-preview" alt="Company logo" hidden>
+        <div class="logo-controls">
+          <input type="file" id="logo-file" accept="image/*" hidden>
+          <button type="button" id="logo-btn" class="logo-btn">Upload logo</button>
+          <button type="button" id="logo-remove-btn" class="logo-btn" hidden>Remove logo</button>
+          <p id="logo-message" class="logo-message" role="status"></p>
+        </div>
       </div>
+      <div class="invoice-meta">
+        <p><label for="invoice-number">Invoice No:</label> <input type="text" id="invoice-number" value="INV-001"></p>
+        <p><label for="issue-date">Issue date:</label> <input type="date" id="issue-date"></p>
+        <p><label for="due-date">Due date:</label> <input type="date" id="due-date"></p>
+        <p class="currency-row">
+          <label for="currency">Currency:</label>
+          <select id="currency">
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="INR">INR (₹)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </p>
+      </div>  
     </header>
 
     <!-- Bill to block -->
@@ -47,6 +66,7 @@
     <button type="button" id="add-item-btn" class="add-item-btn">Add item</button>
     <button type="button" id="clear-btn" class="clear-btn">Clear invoice</button>
     <button type="button" id="print-btn" class="print-btn">Print / Save as PDF</button>
+    <button type="button" id="preview-btn" class="preview-btn">Preview</button>
 
     <!-- Totals block -->
     <section class="totals">

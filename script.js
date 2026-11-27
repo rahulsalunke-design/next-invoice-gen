@@ -13,6 +13,61 @@ const clientNameInput = document.getElementById("client-name");
 const clientAddressInput = document.getElementById("client-address");
 const clientEmailInput = document.getElementById("client-email");
 
+const invoiceNumberInput = document.getElementById("invoice-number");
+const issueDateInput = document.getElementById("issue-date");
+const dueDateInput = document.getElementById("due-date");
+
+const currencySelect = document.getElementById("currency");
+
+// Which locale formats each currency (controls symbol position and separators)
+const CURRENCY_LOCALES = {
+  USD: "en-US",
+  EUR: "de-DE",
+  INR: "en-IN",
+  GBP: "en-GB",
+};
+
+// Turn a number into money text for the chosen currency, e.g. ₹1,23,456.00
+function formatMoney(amount) {
+  const currency = currencySelect.value || "USD";
+  return new Intl.NumberFormat(CURRENCY_LOCALES[currency], {
+    style: "currency",
+    currency: currency,
+  }).format(amount);
+}
+
+const logoPreview = document.getElementById("logo-preview");
+const logoFileInput = document.getElementById("logo-file");
+const logoBtn = document.getElementById("logo-btn");
+const logoRemoveBtn = document.getElementById("logo-remove-btn");
+const logoMessage = document.getElementById("logo-message");
+
+// Biggest logo file we accept (500 KB)
+const MAX_LOGO_BYTES = 500 * 1024;
+
+// The logo as a data URL (the image written as text). Empty means no logo.
+let logoDataUrl = "";
+
+// Show the logo (or hide everything logo-related when given empty text)
+function showLogo(dataUrl) {
+  logoDataUrl = dataUrl;
+  if (dataUrl) {
+    logoPreview.src = dataUrl;
+  } else {
+    logoPreview.removeAttribute("src");
+  }
+  logoPreview.hidden = !dataUrl;
+  logoRemoveBtn.hidden = !dataUrl;
+}
+
+// Today's date as YYYY-MM-DD (the format date inputs use), from the local clock
+function todayAsText() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return now.getFullYear() + "-" + month + "-" + day;
+}
+
 // The name under which the draft is stored in the browser
 const STORAGE_KEY = "invoice-draft";
 
@@ -53,7 +108,7 @@ function updateRowTotal(row) {
   const qty = toNumber(row.querySelector(".item-qty").value);
   const price = toNumber(row.querySelector(".item-price").value);
   const total = qty * price;
-  row.querySelector(".item-total").textContent = total.toFixed(2);
+  row.querySelector(".item-total").textContent = formatMoney(total);
   return total;
 }
 
@@ -75,11 +130,11 @@ function recalculateTotals() {
   const taxAmount = discounted * taxPercent / 100;
   const grandTotal = discounted + taxAmount;
 
-  // 4. Show everything with 2 decimals
-  subtotalEl.textContent = subtotal.toFixed(2);
-  discountAmountEl.textContent = discountAmount.toFixed(2);
-  taxAmountEl.textContent = taxAmount.toFixed(2);
-  grandTotalEl.textContent = grandTotal.toFixed(2);
+  // 4. Show everything as money in the chosen currency
+  subtotalEl.textContent = formatMoney(subtotal);
+  discountAmountEl.textContent = formatMoney(discountAmount);
+  taxAmountEl.textContent = formatMoney(taxAmount);
+  grandTotalEl.textContent = formatMoney(grandTotal);
 }
 
 // FUNCTION 1: read the page into a plain JavaScript object
@@ -87,6 +142,11 @@ function readInvoiceFromPage() {
   const rows = Array.from(itemsBody.querySelectorAll("tr"));
 
   return {
+    invoiceNumber: invoiceNumberInput.value,
+    issueDate: issueDateInput.value,
+    dueDate: dueDateInput.value,
+    currency: currencySelect.value,
+    logo: logoDataUrl,
     billTo: {
       name: clientNameInput.value,
       address: clientAddressInput.value,
@@ -116,6 +176,12 @@ function saveInvoice() {
 // Put the page back to the empty starting state: one empty row, blank fields
 function resetPage() {
   itemsBody.innerHTML = "";
+  invoiceNumberInput.value = "INV-001";
+  issueDateInput.value = todayAsText();
+  dueDateInput.value = "";
+  currencySelect.value = "USD";
+  showLogo("");
+  logoMessage.textContent = "";
   clientNameInput.value = "";
   clientAddressInput.value = "";
   clientEmailInput.value = "";
@@ -137,6 +203,15 @@ function loadInvoice() {
     const data = JSON.parse(saved);
 
     itemsBody.innerHTML = "";
+    invoiceNumberInput.value = String(data.invoiceNumber ?? "INV-001");
+    issueDateInput.value = String(data.issueDate ?? todayAsText());
+    dueDateInput.value = String(data.dueDate ?? "");
+    currencySelect.value = String(data.currency ?? "USD");
+    if (!currencySelect.value) {
+      currencySelect.value = "USD"; // saved value is not in the list
+    }
+    const savedLogo = typeof data.logo === "string" && data.logo.startsWith("data:image/") ? data.logo : "";
+    showLogo(savedLogo);
     clientNameInput.value = String(data.billTo.name ?? "");
     clientAddressInput.value = String(data.billTo.address ?? "");
     clientEmailInput.value = String(data.billTo.email ?? "");
@@ -184,6 +259,20 @@ clearBtn.addEventListener("click", function () {
 // Print / Save as PDF: open the browser's print dialog
 document.getElementById("print-btn").addEventListener("click", function () {
   window.print();
+});
+
+// PREVIEW MODE: show the invoice as a clean, read-only document
+const previewBtn = document.getElementById("preview-btn");
+const PREVIEW_SECTIONS = ".invoice-meta, .bill-to, .items, .totals";
+
+previewBtn.addEventListener("click", function () {
+  const isPreview = document.body.classList.toggle("preview");
+  previewBtn.textContent = isPreview ? "Back to edit" : "Preview";
+
+  // "inert" makes a section impossible to click, focus or edit
+  document.querySelectorAll(PREVIEW_SECTIONS).forEach(function (section) {
+    section.inert = isPreview;
+  });
 });
 
 // Typing in any row (works for new rows too) recalculates everything
@@ -258,6 +347,56 @@ itemsBody.addEventListener("click", function (event) {
   recalculateTotals();
   saveInvoice();
 });
+
+// LOGO UPLOAD: the visible button opens the hidden file picker
+logoBtn.addEventListener("click", function () {
+  logoFileInput.click();
+});
+
+// A file was chosen: check it, read it as a data URL, show it and save it
+logoFileInput.addEventListener("change", function () {
+  const file = logoFileInput.files[0];
+  if (!file) {
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    logoMessage.textContent = "Please choose an image file (PNG, JPG, SVG, ...).";
+    logoFileInput.value = "";
+    return;
+  }
+
+  if (file.size > MAX_LOGO_BYTES) {
+    const sizeKb = Math.round(file.size / 1024);
+    logoMessage.textContent = "That image is " + sizeKb + " KB. Please choose one under 500 KB.";
+    logoFileInput.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", function () {
+    showLogo(String(reader.result));
+    logoMessage.textContent = "";
+    saveInvoice();
+  });
+  reader.addEventListener("error", function () {
+    logoMessage.textContent = "Sorry, that file could not be read. Please try another image.";
+  });
+  reader.readAsDataURL(file);
+
+  // Reset the picker so choosing the same file again still triggers "change"
+  logoFileInput.value = "";
+});
+
+// Remove the logo and save
+logoRemoveBtn.addEventListener("click", function () {
+  showLogo("");
+  logoMessage.textContent = "";
+  saveInvoice();
+});
+
+// Changing the currency redraws every money value
+currencySelect.addEventListener("change", recalculateTotals);
 
 // Changing the discount or tax recalculates everything too
 discountInput.addEventListener("input", recalculateTotals);

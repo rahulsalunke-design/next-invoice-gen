@@ -40,8 +40,19 @@ body {
   margin: 4px 0;
 }
 
-.invoice-meta span {
+.invoice-meta label {
   color: #6b7280;
+}
+
+.invoice-meta input,
+.invoice-meta select {
+  width: 150px;
+  margin-left: 8px;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: right;
 }
 
 /* Bill to */
@@ -238,8 +249,50 @@ body {
   border-bottom: none;
 }
 
+/* Keep the hidden attribute working even on elements with their own display */
+[hidden] {
+  display: none !important;
+}
+
+/* Logo in the header */
+.logo-preview {
+  display: block;
+  max-width: 180px;
+  max-height: 72px;
+  margin: 12px 0 8px;
+  object-fit: contain;
+}
+
+.logo-controls {
+  margin-top: 8px;
+}
+
+.logo-btn {
+  margin: 0 8px 0 0;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.logo-btn:hover {
+  color: #2563eb;
+  border-color: #2563eb;
+  background: #dbeafe;
+}
+
+.logo-message {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #dc2626;
+}
+
 /* Print button: same quiet outline style as Clear invoice */
-.print-btn {
+.print-btn,
+.preview-btn {
   margin: 16px 0 0 8px;
   padding: 10px 16px;
   border: 1px solid #d1d5db;
@@ -250,10 +303,53 @@ body {
   cursor: pointer;
 }
 
-.print-btn:hover {
+.print-btn:hover,
+.preview-btn:hover {
   color: #2563eb;
   border-color: #2563eb;
   background: #dbeafe;
+}
+
+/* PREVIEW MODE: body gets the "preview" class, so the invoice looks like a finished document */
+body.preview .add-item-btn,
+body.preview .clear-btn,
+body.preview .logo-controls,
+body.preview .currency-row,
+body.preview .delete-btn,
+body.preview .items th:first-child,
+body.preview .items td.move-cell,
+body.preview .items th:last-child,
+body.preview .items td:last-child {
+  display: none;
+}
+
+body.preview input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+body.preview input::-webkit-inner-spin-button,
+body.preview input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+body.preview input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+body.preview input::placeholder {
+  color: transparent;
+}
+
+body.preview .items th {
+  background: transparent;
+  border-bottom: 2px solid #000000;
 }
 
 /* PRINT: only applies when printing or saving as PDF */
@@ -279,6 +375,9 @@ body {
   .add-item-btn,
   .clear-btn,
   .print-btn,
+  .preview-btn,
+  .logo-controls,
+  .currency-row,
   .delete-btn,
   .items th:first-child,
   .items td.move-cell,
@@ -302,6 +401,11 @@ body {
   input::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+  }
+
+  /* No calendar icon on printed dates */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
   }
 
   /* Empty fields should not print their grey hint text */
