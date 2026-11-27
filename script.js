@@ -25,7 +25,7 @@ function addItemRow(item) {
     <td class="move-cell">
       <span class="drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</span>
     </td>
-    <td><input type="text" class="item-description" placeholder="Description"></td>
+    <td><input type="text" class="item-description" placeholder="Name"></td>
     <td><input type="number" class="item-qty" value="1"></td>
     <td><input type="number" class="item-price" value="0"></td>
     <td class="item-total">0.00</td>
