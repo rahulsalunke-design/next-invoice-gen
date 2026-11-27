@@ -107,7 +107,9 @@ body {
 /* Drag handle column */
 .items th:first-child,
 .items td.move-cell {
-  width: 56px;
+  width: 32px;
+  padding-left: 4px;
+  padding-right: 4px;
   text-align: center;
   white-space: nowrap;
 }
